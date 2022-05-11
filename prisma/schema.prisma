@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(120)
+  email        String   @unique
+  password     String
+  imgUrlPerfil String
+  nickname     String   @unique @db.VarChar(50)
+  role         Role     @default(USER)
+  sessionId    Int?
+  Session      Session? @relation(fields: [sessionId], references: [id])
+  Card         Card[]
+  Score        Score?
+
+  @@map("player")
+}
+
+model Card {
+  id          Int       @id @default(autoincrement())
+  playerId    String?
+  cards_drawn Int[]
+  Player      Player?   @relation(fields: [playerId], references: [id])
+  Checked     Checked[]
+
+  @@map("card")
+}
+
+model Score {
+  id       Int     @id @default(autoincrement())
+  score    Int
+  playerId String? @unique
+  Player   Player? @relation(fields: [playerId], references: [id])
+
+  @@map("score")
+}
+
+model Session {
+  id          Int      @id @default(autoincrement())
+  numbersDraw Int[]
+  limit       Int
+  close       Boolean  @default(false)
+  winner      String
+  Players     Player[]
+
+  @@map("session")
+}
+
+model Checked {
+  id     Int     @id @default(autoincrement())
+  number Int
+  check  Boolean
+  cardId Int?
+  Card   Card?   @relation(fields: [cardId], references: [id])
+
+  @@map("checked")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
